@@ -27,7 +27,7 @@ export class MediaItem extends EntityManager.Entity {
     title;
     src;
     contentType;
-    added = Date.now();
+    added;
     description = "";
 
     constructor(title, src, contentType) {
@@ -35,6 +35,7 @@ export class MediaItem extends EntityManager.Entity {
         this.title = title;
         this.src = src;
         this.contentType = contentType;
+        this.added = Date.now();
     }
 
     get addedDateString() {

@@ -23,20 +23,7 @@ export default class ListviewViewController extends mwf.ViewController {
     /*
      * for any view: initialise the view
      */
-    async oncreate() {
-        this.addListener(new mwf.EventMatcher("crud", "deleted", "MediaItem"), ((event) => {
-            this.markAsObsolete();
-        }), true);
-        this.addListener(new mwf.EventMatcher("crud", "created", "MediaItem"), ((event) => {
-            this.addToListview(event.data);
-        }));
-        this.addListener(new mwf.EventMatcher("crud", "updated", "MediaItem"), ((event) => {
-            this.updateInListview(event.data._id, event.data);
-        }));
-        this.addListener(new mwf.EventMatcher("crud", "deleted", "MediaItem"), ((event) => {
-            this.removeFromListview(event.data);
-        }));
-
+    async oncreate() {  
         // TODO: do databinding, set listeners, initialise the view
         this.addNewMediaItemElement = this.root.querySelector("#addNewMediaItem");
 
@@ -50,14 +37,22 @@ export default class ListviewViewController extends mwf.ViewController {
             */
             this.createNewItem();
         });
+
+        this.addListener(new mwf.EventMatcher("crud", "created", "MediaItem"), ((event) => {
+            this.addToListview(event.data);
+        }));
+        this.addListener(new mwf.EventMatcher("crud", "updated", "MediaItem"), ((event) => {
+            this.updateInListview(event.data._id, event.data);
+        }));
+        this.addListener(new mwf.EventMatcher("crud", "deleted", "MediaItem"), ((event) => {
+            this.removeFromListview(event.data);
+        }));
+
         /*
         this.crudops.readAll().then((items) => {
             this.initialiseListview(items);
         });
         */
-        entities.MediaItem.readAll().then((items) => {
-            this.initialiseListview(items);
-        });
 
         // call the superclass once creation is done
         super.oncreate();
@@ -83,11 +78,12 @@ export default class ListviewViewController extends mwf.ViewController {
      * for views that initiate transitions to other views
      * NOTE: return false if the view shall not be returned to, e.g. because we immediately want to display its previous view. Otherwise, do not return anything.
      */
-    async onReturnFromNextView(nextviewid, returnValue, returnStatus) {
-        // TODO: check from which view, and possibly with which status, we are returning, and handle returnValue accordingly
-        if (nextviewid == "mediaReadview" && returnValue && returnValue.deletedItem) {
-            this.removeFromListview(returnValue.deletedItem._id);
-        }
+    
+    async onresume(){
+        entities.MediaItem.readAll().then((items) => {
+            this.initialiseListview(items);
+        });
+        return super.onresume();
     }
 
     /*
@@ -115,11 +111,6 @@ export default class ListviewViewController extends mwf.ViewController {
      * for views with listviews: react to the selection of a listitem menu option
      * TODO: delete if no listview is used or if item selection is specified by targetview/targetaction
      */
-    onListItemMenuItemSelected(menuitemview, itemobj, listview) {
-        // TODO: implement how selection of the option menuitemview for itemobj shall be handled
-        super.onListItemMenuItemSelected(menuitemview, itemobj,
-            listview);
-    }
 
     /*
      * for views with dialogs
@@ -147,7 +138,6 @@ export default class ListviewViewController extends mwf.ViewController {
                     item.update().then(() => {
                         //this.updateInListview(item._id, item);
                     });
-                    55
                     this.hideDialog();
                 }),/*!!!*/
                 deleteItem: ((event) => {
